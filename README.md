@@ -1,6 +1,6 @@
 # 
 
-<h1 align="center">Welcome to the-movie-android </h1>
+<h1 align="center">Welcome to the-movie-ios </h1>
 
 
 
