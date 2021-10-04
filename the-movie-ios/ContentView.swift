@@ -4,36 +4,31 @@
 //
 //  Created by Junior Braga on 09/05/21.
 //
-
 import SwiftUI
 
-struct Ocean: Identifiable {
-    let name: String
-    let id = UUID()
-}
-private var oceans = [
-    Ocean(name: "Pacific"),
-    Ocean(name: "Atlantic"),
-    Ocean(name: "Indian"),
-    Ocean(name: "Southern"),
-    Ocean(name: "Arctic")
-]
 struct ContentView: View {
-    @State var results = []
+    @State var filmesSeries = [MovieSeries]()
+    private var gridItemLayout = [GridItem(.flexible()), GridItem(.flexible())]
+    
     var body: some View {
-        Text("Hello, worl!")
-            .padding()
-            
-        List(oceans) { item in
-            VStack(alignment: .leading) {
-                Text(item.name)
+        ScrollView {
+            LazyVGrid(columns: gridItemLayout, spacing: 20) {
+                ForEach(filmesSeries, id: \.id) {  item in
+                    VStack(alignment: .leading) {
+                    RemoteImage(url: "https://image.tmdb.org/t/p/w185" + item.poster_path!)
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 100)
+                    Text(item.title!)
+                }
+                }
             }
-        }.onAppear(perform: loadData)
+        }.onAppear(){loadData()}
     }
     
-    
     func loadData() {
-        ServiceRequest.fetchFilms()
+        ServiceRequest.shared.fetchFilms(page: 1,dataResponseJSON:{ (object) in
+            filmesSeries = (object?.results)!
+        })
     }
 }
 
@@ -41,5 +36,4 @@ struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
     }
-    
 }

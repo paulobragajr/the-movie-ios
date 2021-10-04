@@ -7,8 +7,10 @@
 
 import UIKit
 import Alamofire
+import SwiftyJSON
 
-typealias handlerResponseObject = (Any?) -> Swift.Void
+typealias handlerResponseObject = (NSDictionary?) -> Swift.Void
+//typealias handlerResponseJSON = (Alamofire.DataResponse<Any, <#Failure: Error#>>) -> Swift.Void
 
 class Connection {
     
@@ -18,6 +20,7 @@ class Connection {
     var headers : HTTPHeaders?
     var cookies = [HTTPCookie]()
     
+    static let URL_BASE = "https://api.themoviedb.org/3"
    
     /// Request Method
     ///
@@ -26,16 +29,39 @@ class Connection {
     ///   - method: HTTP Method
     ///   - parameters: Dictionary representation
     ///   - dataResponseJSON: Handler to completion
-    static func request(_ url : String, method : HTTPMethod, parameters : [String : Any]?, dataResponseJSON: @escaping handlerResponseObject) {
-        AF.request(url, method: method, parameters: parameters, encoding: JSONEncoding.default, headers: nil).responseJSON { (response) in
-            
-            print("URL: \(url)\nJSON Response: \(response)\n")
+    static func request(_ url : String, method : HTTPMethod, parameters : [String : Any]?, urlParameters: [String:Any]? = nil, dataResponseJSON: @escaping handlerResponseObject) {
+        
+        let urlConnection = createUrl(from: "\(URL_BASE)\(url)?api_key=b425891fefac82f79ed3543140a977ca", parameters: urlParameters ?? ["":""])
+
+        AF.request(urlConnection, method: method, parameters: parameters, encoding: JSONEncoding.default, headers: nil).responseJSON { (response) in
 
             if response.response?.statusCode == 403 {
                 NotificationCenter.default.post(name: NSNotification.Name(rawValue: "expiredSessionObserver"), object: nil)
             }
-            dataResponseJSON(response)
+            
+            var responseJson = NSDictionary()
+            
+            switch response.result {
+                case .success(let JSON):
+                    print("Success with JSON: \(JSON)")
+                    responseJson = JSON as! NSDictionary
+                case .failure(let error):
+                    print("Request failed with error: \(error)")
+                }
+            
+            print("URL: \(url)\nJSON Response: \(responseJson)\n")
+            dataResponseJSON(responseJson)
         }
+    }
+    
+  
+    static func createUrl(from string: String, parameters: [String:Any]) -> String {
+        var stringUrl = string
+    
+        for parameter in parameters {
+            stringUrl.append("&\(parameter.key)=\(parameter.value)")
+        }
+        return stringUrl
     }
 }
 

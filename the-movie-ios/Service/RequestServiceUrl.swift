@@ -13,8 +13,9 @@ typealias handlerObjectService = (Any?) -> Swift.Void
 class RequestServiceUrl {
     static let shared = RequestServiceUrl()
     
-    func getFilms(handler: handlerObjectService? = nil) {
-        Connection.request("https://swapi.dev/api/films", method: .get, parameters: nil) { (dataResponse) in
+    func getFilms(page:Int ,handler: handlerObjectService? = nil) {
+        let params = ["page":page]
+        Connection.request("/movie/popular", method: .get, parameters: nil,urlParameters: params) { (dataResponse) in
             if let handler = handler { handler(dataResponse) }
         }
     }

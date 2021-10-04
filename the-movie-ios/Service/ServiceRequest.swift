@@ -8,10 +8,19 @@
 import Foundation
 import Alamofire
 
+protocol ServiceRequestDelegate {
+    func fetchFilmsSuccess(responseMovieSeries: ResponseMovieSeries)
+}
+typealias handlerResponseMovieSeries = (ResponseMovieSeries?) -> Swift.Void
+
 class ServiceRequest{
-    static func fetchFilms() {
-        RequestServiceUrl.shared.getFilms( handler: { (object) in
-            print(object)
+    static let shared = ServiceRequest()
+    var delegate: ServiceRequestDelegate?
+    
+    func fetchFilms(page: Int,dataResponseJSON: @escaping handlerResponseMovieSeries) {
+        RequestServiceUrl.shared.getFilms( page: page, handler: { (object) in
+            let response = ResponseMovieSeries(object: object)
+            dataResponseJSON(response)
         })
     }
 }
