@@ -8,25 +8,39 @@ import SwiftUI
 
 struct ContentView: View {
     @State var filmesSeries = [MovieSeries]()
+    @State var currentPage = 1
     private var gridItemLayout = [GridItem(.flexible()), GridItem(.flexible())]
     
     var body: some View {
-        ScrollView {
-            LazyVGrid(columns: gridItemLayout, spacing: 20) {
-                ForEach(filmesSeries, id: \.id) {  item in
-                    VStack(alignment: .leading) {
-                    RemoteImage(url: "https://image.tmdb.org/t/p/w185" + item.poster_path!)
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 100)
-                    Text(item.title!)
+        
+        VStack {
+            Text("Bem Vindo")
+                .font(.title)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .multilineTextAlignment(.leading)
+            Text("Selecione o filme")
+                .font(.footnote)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .foregroundColor(Color(hex: "#00C4FF"))
+        }.padding(EdgeInsets(top: 32, leading: 16, bottom: 0, trailing: 16))
+        
+        List(self.filmesSeries){ movieSeriesItem in
+            HStack() {
+                RemoteImage(url: "https://image.tmdb.org/t/p/w185" + movieSeriesItem.poster_path!)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 90)
+                    .multilineTextAlignment(.leading)
+                VStack {
+                    Text(movieSeriesItem.title!).frame(maxWidth: .infinity, alignment: .leading)
+                    StarsView(rating: Float(movieSeriesItem.vote_average!)).frame(maxWidth: .infinity, alignment: .leading)
                 }
-                }
+                    
             }
-        }.onAppear(){loadData()}
+        }.onAppear(){self.loadData()}
     }
     
     func loadData() {
-        ServiceRequest.shared.fetchFilms(page: 1,dataResponseJSON:{ (object) in
+        ServiceRequest.shared.fetchFilms(page: self.currentPage,dataResponseJSON:{ (object) in
             filmesSeries = (object?.results)!
         })
     }
